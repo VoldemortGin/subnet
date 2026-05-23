@@ -1,0 +1,14 @@
+pyproject.toml
+src/__init__.py
+src/protocol.py
+src/fakeguard.egg-info/PKG-INFO
+src/fakeguard.egg-info/SOURCES.txt
+src/fakeguard.egg-info/dependency_links.txt
+src/fakeguard.egg-info/requires.txt
+src/fakeguard.egg-info/top_level.txt
+src/miner/__init__.py
+src/miner/detector.py
+src/validator/__init__.py
+src/validator/forge.py
+src/validator/generate_samples.py
+src/validator/scorer.py
