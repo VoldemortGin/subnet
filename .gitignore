@@ -1,9 +1,9 @@
 # Ignore everything
 *
 
-# Except proposal directory
-!proposal/
-!proposal/**
+# Except presentation directory
+!presentation/
+!presentation/**
 
 # And gitignore itself
 !.gitignore
