@@ -1,5 +1,9 @@
 # HARM — Hey Asshole, Return Money
 
+<p align="center">
+  <img src="docs/harm_icon_main.png" alt="HARM Icon" width="256">
+</p>
+
 Decentralized image forgery detection for e-commerce refund fraud. A Bittensor subnet proposal.
 
 ![HARM Screenshot](docs/ScreenShot_2026-05-23_170640_167.png)
