@@ -21,8 +21,9 @@ Open http://localhost:5173
 
 ## Usage
 
-- **Analyze** — Upload a suspicious image, get verdict (authentic/tampered) + confidence + detection overlay
 - **Dashboard** — Network stats, recent analyses, miner leaderboard
+- **Analyze** — Upload a suspicious image, get verdict (authentic/tampered) + confidence + detection overlay
+- **Submit** — Simulate the full Miner Commit-Reveal workflow: accept task → analyze → compute SHA-256 hash → commit → reveal → get scored
 - **Miners** — View registered miners, probe accuracy, strike status
 - **Tasks** — Browse probe and real tasks, generate new probes
 
