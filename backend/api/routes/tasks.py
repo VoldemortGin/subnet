@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
-from backend.api.models import SubmissionInfo, SubmissionRequest, TaskDetail, TaskInfo
-from backend.db.store import get_store
+from backend.api.models import (
+    CommitRequest,
+    CommitResponse,
+    RevealRequest,
+    RevealResponse,
+    SubmissionInfo,
+    SubmissionRequest,
+    TaskDetail,
+    TaskInfo,
+)
+from backend.db.store import SubmissionRecord, get_store
 from backend.services.detect_service import DetectService
 from backend.services.forge_service import ForgeService
 from backend.services.miner_service import MinerService
@@ -94,4 +104,89 @@ async def submit_result(task_id: str, req: SubmissionRequest):
         score=sub.score,
         latency_ms=sub.latency_ms,
         created_at=sub.created_at,
+    )
+
+
+@router.post("/{task_id}/commit", response_model=CommitResponse)
+async def commit_hash(task_id: str, req: CommitRequest):
+    store = get_store()
+    task = store.tasks.get(task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if req.miner_id not in store.miners:
+        raise HTTPException(status_code=404, detail="Miner not found")
+
+    placeholder = SubmissionRecord(
+        miner_id=req.miner_id,
+        task_id=task_id,
+        verdict="",
+        confidence=0.0,
+        committed_hash=req.hash,
+    )
+    store.submissions.setdefault(task_id, []).append(placeholder)
+    task.status = "assigned"
+
+    return CommitResponse(ok=True, message="Commitment recorded")
+
+
+@router.post("/{task_id}/reveal", response_model=RevealResponse)
+async def reveal_answer(task_id: str, req: RevealRequest):
+    store = get_store()
+    task = store.tasks.get(task_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    miner = store.miners.get(req.miner_id)
+    if miner is None:
+        raise HTTPException(status_code=404, detail="Miner not found")
+
+    subs = store.submissions.get(task_id, [])
+    committed = next(
+        (s for s in subs if s.miner_id == req.miner_id and s.committed_hash),
+        None,
+    )
+    if committed is None:
+        raise HTTPException(status_code=400, detail="No commitment found for this miner")
+
+    method_str = req.method or ""
+    payload = f"{req.verdict}|{req.confidence}|{method_str}|{req.nonce}"
+    computed_hash = hashlib.sha256(payload.encode()).hexdigest()
+
+    if computed_hash != committed.committed_hash:
+        miner_service = MinerService(store)
+        return RevealResponse(
+            hash_valid=False,
+            score=0.0,
+            is_probe=task.task_type == "probe",
+            ground_truth=None,
+            strike_status=miner_service.get_strike_status(req.miner_id),
+            probe_history=miner.probe_history[-10:],
+        )
+
+    committed.verdict = req.verdict
+    committed.confidence = req.confidence
+
+    service = _get_task_service()
+    try:
+        sub = service.submit_result(task_id, req.miner_id, req.verdict, req.confidence)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    subs[:] = [s for s in subs if not (s.miner_id == req.miner_id and s.committed_hash and s.verdict == "")]
+
+    miner_service = MinerService(store)
+    ground_truth = None
+    if task.task_type == "probe":
+        ground_truth = {
+            "verdict": task.ground_truth_verdict,
+            "method": task.ground_truth_method,
+        }
+
+    return RevealResponse(
+        hash_valid=True,
+        score=sub.score,
+        is_probe=task.task_type == "probe",
+        ground_truth=ground_truth,
+        strike_status=miner_service.get_strike_status(req.miner_id),
+        probe_history=miner.probe_history[-10:],
     )

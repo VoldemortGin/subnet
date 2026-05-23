@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Analyze from './pages/Analyze'
+import Submit from './pages/Submit'
 import Miners from './pages/Miners'
 import Tasks from './pages/Tasks'
 
@@ -12,6 +13,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/analyze" element={<Analyze />} />
+          <Route path="/submit" element={<Submit />} />
           <Route path="/miners" element={<Miners />} />
           <Route path="/tasks" element={<Tasks />} />
         </Route>

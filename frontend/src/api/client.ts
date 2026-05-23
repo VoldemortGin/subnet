@@ -132,3 +132,54 @@ export function registerMiner(name: string, backend: string): Promise<Miner> {
     body: JSON.stringify({ name, backend_name: backend }),
   })
 }
+
+export function getPendingTasks(): Promise<Task[]> {
+  return request<Task[]>('/api/tasks?status=pending')
+}
+
+export interface CommitResponse {
+  ok: boolean
+  message: string
+}
+
+export function commitHash(
+  taskId: string,
+  minerId: string,
+  hash: string
+): Promise<CommitResponse> {
+  return request<CommitResponse>(`/api/tasks/${taskId}/commit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ miner_id: minerId, hash }),
+  })
+}
+
+export interface SubmissionResult {
+  hash_valid: boolean
+  score: number
+  is_probe: boolean
+  ground_truth: { verdict: string; method: string | null } | null
+  strike_status: string
+  probe_history: boolean[]
+}
+
+export function revealAnswer(
+  taskId: string,
+  minerId: string,
+  verdict: string,
+  confidence: number,
+  method: string | null,
+  nonce: string
+): Promise<SubmissionResult> {
+  return request<SubmissionResult>(`/api/tasks/${taskId}/reveal`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      miner_id: minerId,
+      verdict,
+      confidence,
+      method,
+      nonce,
+    }),
+  })
+}

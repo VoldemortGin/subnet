@@ -2,6 +2,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 import {
   LayoutDashboard,
   ScanSearch,
+  SendHorizontal,
   Users,
   ListTodo,
   ShieldAlert,
@@ -10,6 +11,7 @@ import {
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/analyze', icon: ScanSearch, label: 'Analyze' },
+  { to: '/submit', icon: SendHorizontal, label: 'Submit' },
   { to: '/miners', icon: Users, label: 'Miners' },
   { to: '/tasks', icon: ListTodo, label: 'Tasks' },
 ]

@@ -95,3 +95,30 @@ class LeaderboardEntry(BaseModel):
     total_score: float
     probe_accuracy: float
     strike_status: str
+
+
+class CommitRequest(BaseModel):
+    miner_id: str
+    hash: str
+
+
+class CommitResponse(BaseModel):
+    ok: bool
+    message: str
+
+
+class RevealRequest(BaseModel):
+    miner_id: str
+    verdict: str
+    confidence: float
+    method: str | None = None
+    nonce: str
+
+
+class RevealResponse(BaseModel):
+    hash_valid: bool
+    score: float
+    is_probe: bool
+    ground_truth: dict | None = None
+    strike_status: str
+    probe_history: list[bool]

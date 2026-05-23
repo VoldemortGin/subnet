@@ -52,6 +52,7 @@ class SubmissionRecord:
     mask_path: str | None = None
     latency_ms: float = 0.0
     score: float = 0.0
+    committed_hash: str | None = None
     created_at: datetime = field(default_factory=datetime.now)
 
 
