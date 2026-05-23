@@ -1,9 +1,29 @@
-# Ignore everything
-*
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
 
-# Except presentation directory
-!presentation/
-!presentation/**
+# Build output
+dist/
+build/
 
-# And gitignore itself
-!.gitignore
+# IDE
+.idea/
+.vscode/
+.obsidian/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (too large for git)
+data/
+models/
+
+# Logs
+*.log
+
+# Env
+.env

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HARM 流程图展示页</title>
+<style>
+  :root{
+    --bg:#050505;
+    --bg2:#0B0B0D;
+    --card:#111114;
+    --card2:#17171B;
+    --line:#303036;
+    --text:#FFFFFF;
+    --muted:#B8B8C2;
+    --subtle:#7B7B86;
+    --accent:#DC2626;
+    --accent2:#EF4444;
+    --accentDark:#7F1D1D;
+    --green:#22C55E;
+    --yellow:#FBBF24;
+    --blue:#60A5FA;
+    --shadow:0 24px 70px rgba(0,0,0,.45);
+    --radius:22px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC","PingFang SC","Microsoft YaHei",Arial,sans-serif;overflow:hidden;}
+  body:before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(circle at 12% 12%, rgba(220,38,38,.22), transparent 32%),
+      radial-gradient(circle at 88% 18%, rgba(220,38,38,.13), transparent 30%),
+      radial-gradient(circle at 55% 100%, rgba(127,29,29,.18), transparent 42%),
+      linear-gradient(135deg,#020202,#0a0a0c 45%,#030303);
+  }
+  body:after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.22;
+    background-image:linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size:42px 42px;
+    mask-image:radial-gradient(circle at center, black, transparent 80%);
+  }
+
+  .deck{position:relative;z-index:1;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;display:none;flex-direction:column;padding:34px 44px 46px;overflow:auto;
+  }
+  .slide.active{display:flex;animation:fade .28s ease both;}
+  @keyframes fade{from{opacity:0;transform:translateY(10px) scale(.992)}to{opacity:1;transform:none}}
+
+  .slide-header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:18px;flex:0 0 auto;}
+  .kicker{display:inline-flex;align-items:center;gap:10px;color:var(--accent2);font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px;}
+  .kicker:before{content:"";width:10px;height:10px;border-radius:999px;background:var(--accent);box-shadow:0 0 20px rgba(220,38,38,.9)}
+  h1{margin:0;font-size:clamp(28px,3.6vw,56px);line-height:1.05;letter-spacing:-.04em;}
+  .subtitle{margin-top:10px;color:var(--muted);font-size:clamp(14px,1.3vw,18px);line-height:1.55;max-width:980px;}
+  .badge{border:1px solid rgba(220,38,38,.5);background:rgba(220,38,38,.12);color:#fff;border-radius:999px;padding:9px 14px;font-weight:800;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}
+  .content{flex:1;min-height:0;display:flex;flex-direction:column;gap:16px;}
+
+  .card,.node,.panel{
+    background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+    border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);box-shadow:var(--shadow);position:relative;
+  }
+  .node{padding:18px 18px;min-height:86px;display:flex;flex-direction:column;justify-content:center;gap:8px;}
+  .node.small{min-height:62px;padding:13px 14px;border-radius:17px;}
+  .node.compact{min-height:auto;padding:12px 14px;border-radius:16px;}
+  .node.accent{border-color:rgba(220,38,38,.72);background:linear-gradient(180deg,rgba(220,38,38,.25),rgba(127,29,29,.12));}
+  .node.green{border-color:rgba(34,197,94,.42);background:linear-gradient(180deg,rgba(34,197,94,.16),rgba(34,197,94,.04));}
+  .node.yellow{border-color:rgba(251,191,36,.48);background:linear-gradient(180deg,rgba(251,191,36,.15),rgba(251,191,36,.035));}
+  .node.blue{border-color:rgba(96,165,250,.48);background:linear-gradient(180deg,rgba(96,165,250,.15),rgba(96,165,250,.035));}
+  .node-title{font-size:clamp(16px,1.25vw,22px);font-weight:900;line-height:1.2;}
+  .node-desc{color:var(--muted);font-size:clamp(12px,.96vw,15px);line-height:1.48;}
+  .node ul{margin:4px 0 0 18px;padding:0;color:var(--muted);font-size:clamp(12px,.9vw,14px);line-height:1.42;}
+  .label{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.11);color:#fff;width:max-content;}
+  .label.red{background:rgba(220,38,38,.18);border-color:rgba(220,38,38,.45);color:#FCA5A5}
+  .label.green{background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.35);color:#86EFAC}
+  .label.yellow{background:rgba(251,191,36,.13);border-color:rgba(251,191,36,.35);color:#FDE68A}
+  .label.blue{background:rgba(96,165,250,.13);border-color:rgba(96,165,250,.35);color:#BFDBFE}
+
+  .flow-row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;align-items:center;gap:14px;}
+  .flow-row.tight{gap:9px}.flow-col{display:flex;flex-direction:column;gap:12px;}.arrow{display:flex;align-items:center;justify-content:center;color:var(--accent2);font-weight:900;font-size:30px;text-shadow:0 0 18px rgba(220,38,38,.6);min-width:22px;}
+  .arrow.down{font-size:26px;min-height:20px}.arrow.thin{font-size:23px;opacity:.9}
+  .two-col{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;min-height:0;}.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.four-col{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid-auto{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .panel{padding:18px;}.panel-title{font-size:20px;font-weight:950;margin-bottom:10px}.panel p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}.panel ul{margin:8px 0 0 18px;padding:0;color:var(--muted);font-size:14px;line-height:1.5}.big-number{font-size:42px;font-weight:950;color:var(--accent2);line-height:1}.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:11px 13px;border-radius:15px;color:#fff;font-weight:800;line-height:1.45}.muted{color:var(--muted)}.accent-text{color:#FCA5A5;font-weight:900}.nowrap{white-space:nowrap}
+
+  .top-network{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:14px;align-items:stretch}.network-core{display:grid;grid-template-columns:1fr;gap:12px}.architecture-band{border:1px solid rgba(220,38,38,.35);background:linear-gradient(90deg,rgba(220,38,38,.13),rgba(255,255,255,.03),rgba(220,38,38,.13));border-radius:24px;padding:14px;display:flex;justify-content:space-around;align-items:center;gap:12px}.mini-chip{padding:10px 12px;border-radius:15px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);font-weight:850;text-align:center;color:#fff;}
+
+  .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;align-items:stretch;position:relative}.timeline:before{content:"";position:absolute;left:5%;right:5%;top:35px;height:4px;background:linear-gradient(90deg,var(--accent),rgba(220,38,38,.25));border-radius:999px;z-index:-1}.time-card{padding-top:64px}.time-dot{position:absolute;top:22px;width:30px;height:30px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 8px rgba(220,38,38,.16),0 0 28px rgba(220,38,38,.9)}.time-card{position:relative}.phase{margin-top:8px;border-top:1px dashed rgba(255,255,255,.2);padding-top:8px;color:var(--muted);font-size:13px;}
+
+  table{width:100%;border-collapse:separate;border-spacing:0 9px;font-size:clamp(12px,.95vw,15px)}th{color:#FCA5A5;text-align:left;font-size:13px;letter-spacing:.08em;text-transform:uppercase;padding:0 12px 5px}td{background:rgba(255,255,255,.055);border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);padding:12px;vertical-align:top;color:var(--muted);line-height:1.42}td:first-child{border-left:1px solid rgba(255,255,255,.1);border-radius:16px 0 0 16px;color:#fff;font-weight:900;width:32%}td:last-child{border-right:1px solid rgba(255,255,255,.1);border-radius:0 16px 16px 0}.defense{color:#fff;font-weight:900}.attack{color:#FCA5A5;font-weight:900}.vs-arrow{color:var(--accent);font-weight:950;font-size:20px;text-align:center;width:40px}
+
+  .strike-ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.strike-step{border-radius:16px;padding:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);min-height:95px}.strike-step b{display:block;color:#fff;margin-bottom:5px}.strike-step small{color:var(--muted);line-height:1.4;display:block}.strike-step.warn{border-color:rgba(251,191,36,.55)}.strike-step.ban{border-color:rgba(220,38,38,.65);background:rgba(220,38,38,.09)}
+
+  .decision{height:100%;display:grid;grid-template-columns:.8fr 1.1fr;gap:18px}.root-question{display:flex;align-items:center;justify-content:center;text-align:center;font-size:34px;font-weight:950;border:1px solid rgba(220,38,38,.55);background:linear-gradient(180deg,rgba(220,38,38,.22),rgba(255,255,255,.03));border-radius:28px;padding:24px;box-shadow:var(--shadow)}.tree-list{display:flex;flex-direction:column;gap:12px}.branch{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:stretch}.branch-label{display:flex;align-items:center;justify-content:center;border-radius:18px;border:1px solid rgba(220,38,38,.45);background:rgba(220,38,38,.12);font-weight:900;color:#FCA5A5;text-align:center;padding:12px}.options{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.options.single{grid-template-columns:1fr}.tree-card{border-radius:18px;padding:13px 14px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.11);}.tree-card b{display:block;margin-bottom:5px}.tree-card span{color:var(--muted);font-size:13px;line-height:1.42}
+
+  .business-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;height:100%;min-height:0}.step-chain{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.chain-step{min-height:110px}.emission{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.donut{height:92px;border-radius:22px;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(180deg,rgba(220,38,38,.24),rgba(255,255,255,.045));border:1px solid rgba(220,38,38,.35)}.donut b{font-size:27px;color:#fff}.donut span{color:var(--muted);font-size:13px}.phase-list{display:flex;flex-direction:column;gap:10px}.phase-card{padding:12px;border-radius:17px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1)}.phase-card b{color:#fff}.phase-card span{display:block;color:var(--muted);font-size:13px;margin-top:3px;line-height:1.42}
+
+  .footer{position:fixed;left:34px;right:34px;bottom:18px;z-index:5;display:flex;justify-content:space-between;align-items:center;color:var(--subtle);font-size:12px;pointer-events:none}.progress{height:4px;width:220px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden}.bar{height:100%;width:10%;background:var(--accent);box-shadow:0 0 22px rgba(220,38,38,.8);transition:width .22s ease}.help{display:flex;gap:12px;align-items:center}.key{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.055);border-radius:7px;padding:4px 7px;color:#fff;font-weight:700}.page-number{font-weight:900;color:#fff}.hint{color:var(--muted)}
+
+  .method-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.method{padding:12px;border-radius:16px;background:rgba(220,38,38,.09);border:1px solid rgba(220,38,38,.32);}.method b{display:block;margin-bottom:5px}.method span{color:var(--muted);font-size:13px;line-height:1.38}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.detail-card{padding:14px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}.detail-card b{font-size:16px;color:#fff}.detail-card p{margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.45}.detail-card:nth-child(1),.detail-card:nth-child(2){border-color:rgba(220,38,38,.34)}
+
+  @media (max-width: 980px){
+    .slide{padding:24px 22px 52px}.two-col,.business-grid,.decision{grid-template-columns:1fr}.grid-4,.four-col,.method-grid,.strike-ladder{grid-template-columns:repeat(2,1fr)}.flow-row{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.timeline{grid-template-columns:1fr}.timeline:before{display:none}.time-card{padding-top:16px}.time-dot{display:none}.step-chain{grid-template-columns:1fr}.branch{grid-template-columns:1fr}.options{grid-template-columns:1fr}.footer{left:18px;right:18px}.progress{width:120px}.slide-header{flex-direction:column}.detail-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <section class="slide active">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 01</div>
+        <h1>整体系统架构图</h1>
+        <div class="subtitle">商家提交可疑退款图片，Validator 分发给多个 Miner，Miner 判断真假，Validator 评分并把权重提交到 Bittensor 链上。</div>
+      </div>
+      <div class="badge">黑底 · 红色强调 · 去中心化检测网络</div>
+    </div>
+    <div class="content">
+      <div class="architecture-band">
+        <div class="mini-chip">Bittensor 网络</div>
+        <div class="mini-chip">Yuma 共识</div>
+        <div class="mini-chip">Emission 分配</div>
+        <div class="mini-chip">链上权重</div>
+      </div>
+      <div class="flow-row" style="grid-template-columns:1fr 42px 1fr 42px 1.25fr 42px 1.35fr 42px 1fr;grid-auto-flow:initial;">
+        <div class="node blue"><span class="label blue">商家客户</span><div class="node-title">可疑退款图片</div><div class="node-desc">通过 API 提交电商退款场景中的商品图片、截图或证据图。</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><span class="label">API Gateway</span><div class="node-title">查询入口</div><div class="node-desc">接收请求、鉴权、限流，并把图片送入任务池。</div></div>
+        <div class="arrow">→</div>
+        <div class="node accent"><span class="label red">Validator 节点</span><div class="node-title">造假引擎 + 任务分发 + 评分器</div><div class="node-desc">混合真实任务与探针任务，分发给 Miner，收集响应并计算权重。</div></div>
+        <div class="arrow">→</div>
+        <div class="node green"><span class="label green">Miner 节点</span><div class="node-title">ML / 人工 / 混合检测</div><div class="node-desc">多个 Miner 独立判断图片真伪，返回 verdict、confidence、mask 和 method。</div></div>
+        <div class="arrow">→</div>
+        <div class="node yellow"><span class="label yellow">链上奖励</span><div class="node-title">提交权重</div><div class="node-desc">Validator 把权重提交到 Bittensor 链，Emission 分配给 Miner 和 Validator。</div></div>
+      </div>
+      <div class="grid-3">
+        <div class="panel"><div class="panel-title">Validator 的价值</div><p>把商家真实任务与自造探针任务混合，让 Miner 无法判断哪一张有 ground truth，从而实现客观评分。</p></div>
+        <div class="panel"><div class="panel-title">Miner 的价值</div><p>用图像取证模型、人工判断或混合方式检测假图，输出可解释的检测结果。</p></div>
+        <div class="panel"><div class="panel-title">Bittensor 的价值</div><p>通过 Yuma 共识聚合 Validator 权重，按贡献分配 emission，形成去中心化激励闭环。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 02</div>
+        <h1>Validator 完整工作流程</h1>
+        <div class="subtitle">Validator 是系统的裁判与任务调度中心：它负责生成探针、混入真实请求、分发任务、收集结果、评分并上链。</div>
+      </div>
+      <div class="badge">70% 真实商家查询 + 30% 探针任务</div>
+    </div>
+    <div class="content two-col">
+      <div class="flow-col">
+        <div class="node"><span class="label blue">Step 1</span><div class="node-title">图片来源管理</div><div class="node-desc"><b class="accent-text">70%</b> 来自真实商家查询；<b class="accent-text">30%</b> 来自 Validator 自造探针任务。</div></div>
+        <div class="arrow down">↓</div>
+        <div class="node accent"><span class="label red">Step 2</span><div class="node-title">Forge Engine 造假引擎</div><div class="node-desc">从干净图片生成假图，同时记录篡改方法与 ground truth mask。</div></div>
+        <div class="arrow down">↓</div>
+        <div class="node"><span class="label">Step 3</span><div class="node-title">任务分发</div><div class="node-desc">将探针和真实任务混合，下发给所有 Miner，确保 Miner 无法区分任务类型。</div></div>
+        <div class="arrow down">↓</div>
+        <div class="flow-row tight" style="grid-template-columns:1fr 30px 1fr 30px 1fr;grid-auto-flow:initial;">
+          <div class="node small"><span class="label">Step 4</span><div class="node-title">收集响应</div></div>
+          <div class="arrow thin">→</div>
+          <div class="node small"><span class="label">Step 5</span><div class="node-title">评分</div><div class="node-desc">探针用 ground truth；真实任务用加权投票。</div></div>
+          <div class="arrow thin">→</div>
+          <div class="node small"><span class="label">Step 6</span><div class="node-title">提交权重上链</div></div>
+        </div>
+      </div>
+      <div class="flow-col">
+        <div class="panel"><div class="panel-title">Forge Engine 的 4 种篡改方法</div>
+          <div class="method-grid">
+            <div class="method"><b>Copy-Move</b><span>复制图内区域并粘贴到同一图中。</span></div>
+            <div class="method"><b>Splicing</b><span>从其他图片拼接局部区域。</span></div>
+            <div class="method"><b>压缩不一致</b><span>局部使用不同 JPEG 质量重压缩。</span></div>
+            <div class="method"><b>噪声注入</b><span>局部添加高斯噪声制造异常。</span></div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="node green"><span class="label green">Ground Truth</span><div class="node-title">客观答案</div><div class="node-desc">每张探针图保存篡改区域二值 mask 与使用的方法。</div></div>
+          <div class="node yellow"><span class="label yellow">混合任务池</span><div class="node-title">无法被识别</div><div class="node-desc">真实任务与探针任务外观一致，Miner 只能认真检测每一张图。</div></div>
+        </div>
+        <div class="formula">Validator Score → Miner Weight → Bittensor Chain → Emission</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 03</div>
+        <h1>Miner 完整工作流程</h1>
+        <div class="subtitle">Miner 是检测执行者：它们可以使用 ML 模型、人工判断，或模型初筛加人工复检的混合路线。</div>
+      </div>
+      <div class="badge">verdict + confidence + mask + method</div>
+    </div>
+    <div class="content">
+      <div class="flow-row" style="grid-template-columns:1fr 40px 1.6fr 40px 1fr 40px 1fr;grid-auto-flow:initial;">
+        <div class="node blue"><span class="label blue">1</span><div class="node-title">接收图片</div><div class="node-desc">从 Validator 获取待检测图片。</div></div>
+        <div class="arrow">→</div>
+        <div class="node accent"><span class="label red">2</span><div class="node-title">选择检测路线</div><div class="node-desc">根据资源和策略选择 ML、人工或混合检测。</div></div>
+        <div class="arrow">→</div>
+        <div class="node"><span class="label">3</span><div class="node-title">执行分析</div><div class="node-desc">检测篡改痕迹、定位区域、估计置信度。</div></div>
+        <div class="arrow">→</div>
+        <div class="node green"><span class="label green">4-5</span><div class="node-title">生成响应并提交</div><div class="node-desc">通过 Commit-Reveal 协议提交结果。</div></div>
+      </div>
+      <div class="three-col">
+        <div class="panel"><div class="panel-title">ML 模型路线</div><p>从 10 个模型后端中选择，例如 Mesorch、TruFor、FOCAL、IML-ViT、ProFact、PSCC-Net 等。适合 GPU 或 CPU 自动化检测。</p></div>
+        <div class="panel"><div class="panel-title">人工路线</div><p>肉眼观察商品图的纹理、边缘、压缩痕迹与逻辑不一致区域，再手动标注可疑区域。</p></div>
+        <div class="panel"><div class="panel-title">混合路线</div><p>模型先做快速初筛并给出 mask，人工复检高风险样本，兼顾速度、准确率和可解释性。</p></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Miner 响应结构</div>
+        <div class="flow-row tight" style="grid-template-columns:repeat(4,1fr);grid-auto-flow:initial;">
+          <div class="node small"><span class="label red">verdict</span><div class="node-title">真 / 假</div></div>
+          <div class="node small"><span class="label blue">confidence</span><div class="node-title">置信度 0-1</div></div>
+          <div class="node small"><span class="label green">mask</span><div class="node-title">篡改区域，可选</div></div>
+          <div class="node small"><span class="label yellow">method</span><div class="node-title">篡改方法，可选</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 04</div>
+        <h1>Commit-Reveal 防抄袭协议</h1>
+        <div class="subtitle">所有 Miner 先提交不可逆 hash 承诺，等承诺全部收齐后才揭示原始结果，从时间结构上切断“看别人答案再抄”的路径。</div>
+      </div>
+      <div class="badge">Phase 1 承诺 · Phase 2 揭示</div>
+    </div>
+    <div class="content">
+      <div class="timeline">
+        <div class="node time-card"><div class="time-dot"></div><span class="label red">T0</span><div class="node-title">Validator 下发图片</div><div class="node-desc">同一任务发给多个 Miner。</div></div>
+        <div class="node time-card"><div class="time-dot"></div><span class="label blue">T1</span><div class="node-title">提交 hash</div><div class="node-desc">Miner 独立计算，提交 <b>hash(结果 + 随机数)</b>。</div><div class="phase">Phase 1：承诺阶段</div></div>
+        <div class="node time-card"><div class="time-dot"></div><span class="label">T2</span><div class="node-title">hash 收齐</div><div class="node-desc">所有人只能看到不可逆的 hash。</div></div>
+        <div class="node time-card"><div class="time-dot"></div><span class="label green">T3</span><div class="node-title">揭示原始结果</div><div class="node-desc">公布 verdict、confidence、mask、method 与随机数。</div><div class="phase">Phase 2：揭示阶段</div></div>
+        <div class="node time-card"><div class="time-dot"></div><span class="label yellow">T4</span><div class="node-title">验证并评分</div><div class="node-desc">hash 不一致者直接零分；一致者进入评分。</div></div>
+      </div>
+      <div class="grid-3">
+        <div class="panel"><div class="panel-title">为什么不能抄？</div><p>承诺后、揭示前，别人只看到 hash，无法反推出 verdict 或 confidence。</p></div>
+        <div class="panel"><div class="panel-title">为什么不能改？</div><p>揭示结果必须与先前 hash 完全一致；随机数也必须匹配。</p></div>
+        <div class="panel"><div class="panel-title">违规怎么处理？</div><p>hash 不一致、超时未揭示、格式错误，均可直接判零分。</p></div>
+      </div>
+      <div class="formula">commit = hash(verdict, confidence, mask, method, nonce) &nbsp; → &nbsp; reveal = result + nonce &nbsp; → &nbsp; verify(commit)</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 05</div>
+        <h1>评分流程</h1>
+        <div class="subtitle">总分由探针任务、共识任务与速度评分组成；如果 Strike System 触发封禁，总分直接归零。</div>
+      </div>
+      <div class="badge">60% 探针 · 35% 共识 · 5% 速度</div>
+    </div>
+    <div class="content">
+      <div class="grid-3">
+        <div class="node accent"><span class="label red">A · 60%</span><div class="node-title">探针任务评分</div><div class="node-desc">先过门控：verdict 正确才继续；错误直接 0 分并记 1 次 Strike。</div><ul><li>置信度校准 70%</li><li>mask IoU 20%</li><li>方法识别 10%</li></ul></div>
+        <div class="node blue"><span class="label blue">B · 35%</span><div class="node-title">共识任务评分</div><div class="node-desc">真实任务无 ground truth，因此用加权多数投票；投票权重等于历史探针准确率。</div></div>
+        <div class="node green"><span class="label green">C · 5%</span><div class="node-title">速度评分</div><div class="node-desc">S_latency = max(0, 1 - 响应时间 / 超时时间)。权重很低，保证人工 Miner 仍有竞争力。</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">D · 三振出局 Strike System：最近 10 次探针滚动窗口</div>
+        <div class="strike-ladder">
+          <div class="strike-step"><b>0-2 次判错</b><small>正常参与，继续获得探针分与共识权重。</small></div>
+          <div class="strike-step warn"><b>3 次判错</b><small>黄牌警告：共识投票权重降为 0，只能做探针赎回信用。</small></div>
+          <div class="strike-step ban"><b>4 次判错</b><small>红牌封禁：权重归零，冷却 3 个 epoch 后可恢复。</small></div>
+          <div class="strike-step ban"><b>5 次以上</b><small>永久除名：踢出网络，需重新注册并烧 TAO。</small></div>
+          <div class="strike-step"><b>威慑效果</b><small>投机者即使偶尔猜对，只要 10 次内错 3 次就出局。</small></div>
+        </div>
+      </div>
+      <div class="formula">总分 = 0.60 × 探针均分 + 0.35 × 共识均分 + 0.05 × 速度分<br>前提：Strike 未触发封禁；若触发封禁，总分直接归零。</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 06</div>
+        <h1>探针任务生成流程</h1>
+        <div class="subtitle">探针任务是 Validator 的“考试题”：它们有已知答案，但会与真实商家任务混在一起，让 Miner 无法区分。</div>
+      </div>
+      <div class="badge">自动提升难度 · 连续 3 epoch 超 90%</div>
+    </div>
+    <div class="content">
+      <div class="flow-row" style="grid-template-columns:1fr 28px 1fr 28px 1fr 28px 1fr;grid-auto-flow:initial;">
+        <div class="node blue"><span class="label blue">1</span><div class="node-title">选择干净产品图</div><div class="node-desc">从图片库抽取真实、未篡改商品图。</div></div>
+        <div class="arrow thin">→</div>
+        <div class="node"><span class="label">2</span><div class="node-title">随机选择篡改方法</div><div class="node-desc">Copy-Move / Splicing / 压缩不一致 / 噪声注入。</div></div>
+        <div class="arrow thin">→</div>
+        <div class="node accent"><span class="label red">3</span><div class="node-title">执行篡改操作</div><div class="node-desc">生成新的假图并保留可控篡改参数。</div></div>
+        <div class="arrow thin">→</div>
+        <div class="node green"><span class="label green">4</span><div class="node-title">记录 Ground Truth</div><div class="node-desc">保存二值 mask 与使用的方法。</div></div>
+      </div>
+      <div class="flow-row" style="grid-template-columns:1fr 28px 1fr 28px 1fr;grid-auto-flow:initial;">
+        <div class="node"><span class="label">5</span><div class="node-title">打包探针任务</div><div class="node-desc">篡改图给 Miner；ground truth 只保存在 Validator 侧。</div></div>
+        <div class="arrow thin">→</div>
+        <div class="node yellow"><span class="label yellow">6</span><div class="node-title">混入任务池</div><div class="node-desc">Miner 无法区分探针与真实任务。</div></div>
+        <div class="arrow thin">→</div>
+        <div class="node accent"><span class="label red">7</span><div class="node-title">自动提升难度</div><div class="node-desc">网络准确率连续 3 个 epoch 超过 90% 后，缩小篡改区域或使用更高级方法。</div></div>
+      </div>
+      <div class="grid-4">
+        <div class="method"><b>缩小篡改区域</b><span>让 mask 更小、更难定位。</span></div>
+        <div class="method"><b>高级篡改方法</b><span>引入 AI inpainting 或更自然的拼接。</span></div>
+        <div class="method"><b>混合多种方法</b><span>同一张图里叠加压缩、噪声与拼接。</span></div>
+        <div class="method"><b>添加后处理</b><span>模拟平台压缩、缩放、截图二次传播。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 07</div>
+        <h1>反作弊机制总览</h1>
+        <div class="subtitle">每一种攻击都对应一层防御。核心原则：客观探针评分、不可抄袭提交、加权共识、经济门槛与快速淘汰。</div>
+      </div>
+      <div class="badge">攻击 → 对策</div>
+    </div>
+    <div class="content">
+      <table>
+        <thead><tr><th>攻击方式</th><th></th><th>防御机制</th></tr></thead>
+        <tbody>
+          <tr><td><span class="attack">女巫攻击</span><br>一人注册多个 Miner 操纵投票。</td><td class="vs-arrow">→</td><td><span class="defense">加权投票 + 经济门槛</span><br>投票权看历史探针准确率；注册成本抬高批量作恶门槛。</td></tr>
+          <tr><td><span class="attack">搭便车</span><br>等别人答完再抄答案。</td><td class="vs-arrow">→</td><td><span class="defense">Commit-Reveal 两阶段提交</span><br>先提交不可逆 hash，收齐后才揭示答案。</td></tr>
+          <tr><td><span class="attack">总说“假”</span><br>赌假图比例，试图蒙混过关。</td><td class="vs-arrow">→</td><td><span class="defense">动态真假比例 + 门控 + 三振出局</span><br>比例不公开，错判探针直接记 Strike。</td></tr>
+          <tr><td><span class="attack">总说“真”</span><br>赌真图比例，机制上与总说假对称。</td><td class="vs-arrow">→</td><td><span class="defense">同上，机制完全对称</span><br>真图和假图比例可动态反转，单边押注会快速暴露。</td></tr>
+          <tr><td><span class="attack">模型过拟合</span><br>只针对 Validator 造假方式优化。</td><td class="vs-arrow">→</td><td><span class="defense">方法多样性 + 难度自适应</span><br>篡改方式随机组合，网络进步后自动升级题目。</td></tr>
+          <tr><td><span class="attack">Validator 串通</span><br>给特定 Miner 泄题或偏置评分。</td><td class="vs-arrow">→</td><td><span class="defense">多 Validator 交叉验证 + Yuma 共识</span><br>异常权重分布会被其他 Validator 稀释和惩罚。</td></tr>
+          <tr><td><span class="attack">低质量 Miner 占位</span><br>表现差但长期不退出。</td><td class="vs-arrow">→</td><td><span class="defense">三振出局 Strike System</span><br>滚动窗口快速淘汰低质量节点，减少资源浪费。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 08</div>
+        <h1>反作弊机制详解</h1>
+        <div class="subtitle">把总览页里的防御机制展开成可执行的规则：谁有投票权、何时揭示、如何动态调整、怎么处理串通和低质量节点。</div>
+      </div>
+      <div class="badge">7 层防御</div>
+    </div>
+    <div class="content">
+      <div class="detail-grid">
+        <div class="detail-card"><b>防御 1：加权投票</b><p>共识不按人头计数，而按 Miner 历史探针准确率加权。攻击者控制多个低分 Miner，影响力也不如一个高分 Miner。注册需烧 TAO，批量注册成本高；60% 分数来自客观探针，Sybil 身份本身没有优势。</p></div>
+        <div class="detail-card"><b>防御 2：Commit-Reveal 协议</b><p>Phase 1 先提交 hash(结果 + 随机数)，提交后无法修改；Phase 2 在所有 hash 收齐后揭示原始结果。Validator 验证 hash 一致性，不匹配或超时直接零分。</p></div>
+        <div class="detail-card"><b>防御 3-4：动态真假比例</b><p>探针中真图与假图比例每个 epoch 动态调整且不公开。总说“假”会在真图探针上触发门控，总说“真”同理。Validator 可主动调高反向比例，加速识别投机者。</p></div>
+        <div class="detail-card"><b>防御 5：方法多样性 + 难度自适应</b><p>Forge Engine 随机使用 Copy-Move、Splicing、压缩不一致、噪声注入，并可升级到 inpainting、混合篡改和后处理。共识任务奖励真实商家图片表现，抑制只会刷探针的模型。</p></div>
+        <div class="detail-card"><b>防御 6：多 Validator 交叉验证</b><p>多个独立 Validator 各自生成探针并独立评分。若 Validator A 串通 Miner X，X 只在 A 上异常高分；Yuma Consensus 可检测权重分布偏离并降低 A 的影响力。</p></div>
+        <div class="detail-card"><b>防御 7：三振出局 Strike System</b><p>追踪最近 10 次探针判断。0-2 错正常；3 错黄牌，投票权重归零；4 错红牌封禁，冷却 3 epoch；5 错以上永久除名，需重新注册烧 TAO。</p></div>
+      </div>
+      <div class="formula">核心思想：用客观探针控制质量，用密码学承诺防抄袭，用经济门槛和滚动淘汰提高作恶成本。</div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 09</div>
+        <h1>Miner 资源分层选择指南</h1>
+        <div class="subtitle">不同 Miner 可以根据硬件资源和人工投入选择不同路线，低资源节点也能参与，高资源节点可以冲击更高精度。</div>
+      </div>
+      <div class="badge">CPU · 人工 · GPU · 集成</div>
+    </div>
+    <div class="content decision">
+      <div class="root-question">你有 GPU 吗？</div>
+      <div class="tree-list">
+        <div class="branch">
+          <div class="branch-label">没有 GPU</div>
+          <div class="options">
+            <div class="tree-card"><b>愿意人工看图 → 人工 Miner</b><span>肉眼判断 + 手动标注，速度慢但可解释性强。</span></div>
+            <div class="tree-card"><b>不愿意人工 → PSCC-Net</b><span>2M 参数，CPU 可跑，约 0.019 秒/张。</span></div>
+          </div>
+        </div>
+        <div class="branch">
+          <div class="branch-label">4-6 GB 显存</div>
+          <div class="options">
+            <div class="tree-card"><b>Mesorch-P</b><span>AAAI 2025 最新 SOTA，AUC 0.943。</span></div>
+            <div class="tree-card"><b>TruFor</b><span>CVPR 2023，AUC 0.924。</span></div>
+          </div>
+        </div>
+        <div class="branch">
+          <div class="branch-label">6-8 GB 显存</div>
+          <div class="options single">
+            <div class="tree-card"><b>IML-ViT</b><span>标准化 F1 最高 0.725，适合更强视觉骨干。</span></div>
+          </div>
+        </div>
+        <div class="branch">
+          <div class="branch-label">8+ GB 显存</div>
+          <div class="options">
+            <div class="tree-card"><b>FOCAL</b><span>IoU 最强，适合强调篡改区域定位。</span></div>
+            <div class="tree-card"><b>多模型集成投票</b><span>多个后端取长补短，冲击精度天花板。</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="slide-header">
+      <div>
+        <div class="kicker">HARM / Page 10</div>
+        <h1>商业闭环流程</h1>
+        <div class="subtitle">从商家退款纠纷中的可疑图片开始，到检测报告、退款决策、链上奖励和商业扩展，形成完整闭环。</div>
+      </div>
+      <div class="badge">API 收费 · Emission 激励 · 场景扩展</div>
+    </div>
+    <div class="content business-grid">
+      <div class="flow-col">
+        <div class="step-chain">
+          <div class="node small chain-step"><span class="label blue">1</span><div class="node-title">退款申请 + 可疑图片</div></div>
+          <div class="node small chain-step"><span class="label blue">2</span><div class="node-title">商家通过 HARM API 提交</div></div>
+          <div class="node small chain-step"><span class="label red">3</span><div class="node-title">Validator 混入任务池</div></div>
+          <div class="node small chain-step"><span class="label green">4</span><div class="node-title">多个 Miner 独立检测</div></div>
+          <div class="node small chain-step"><span class="label">5</span><div class="node-title">Commit-Reveal 收集结果</div></div>
+          <div class="node small chain-step"><span class="label red">6</span><div class="node-title">Validator 评分</div></div>
+          <div class="node small chain-step"><span class="label yellow">7</span><div class="node-title">返回鉴定报告</div><div class="node-desc">真/假 + 置信度 + 可疑区域</div></div>
+          <div class="node small chain-step"><span class="label yellow">8</span><div class="node-title">商家决定是否退款</div></div>
+          <div class="node small chain-step"><span class="label red">9</span><div class="node-title">链上分配 Emission</div></div>
+        </div>
+      </div>
+      <div class="flow-col">
+        <div class="panel"><div class="panel-title">Emission 分配</div>
+          <div class="emission">
+            <div class="donut"><b>41%</b><span>Miner</span></div>
+            <div class="donut"><b>41%</b><span>Validator</span></div>
+            <div class="donut"><b>18%</b><span>Subnet</span></div>
+          </div>
+        </div>
+        <div class="panel"><div class="panel-title">变现路径</div>
+          <div class="phase-list">
+            <div class="phase-card"><b>Phase 1（1-3 月）</b><span>纯合成探针，建立 Miner 生态，验证评分机制和反作弊机制。</span></div>
+            <div class="phase-card"><b>Phase 2（4-6 月）</b><span>接入商家 API，按查询收费，把真实需求引入网络。</span></div>
+            <div class="phase-card"><b>Phase 3（6 月+）</b><span>扩展到保险理赔、法律取证、跨境电商等图像证据场景。</span></div>
+          </div>
+        </div>
+        <div class="formula">商家需求 → 网络检测 → 报告交付 → 链上激励 → 更多 Miner 加入 → 更高检测质量</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="footer">
+  <div class="help"><span class="key">←</span><span class="key">→</span><span class="hint">翻页</span><span class="key">F</span><span class="hint">全屏</span></div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div><span class="page-number" id="pageNumber">1 / 10</span></div>
+</div>
+
+<script>
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const pageNumber = document.getElementById('pageNumber');
+  const bar = document.getElementById('bar');
+  let index = 0;
+
+  function show(i){
+    index = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === index));
+    pageNumber.textContent = (index + 1) + ' / ' + slides.length;
+    bar.style.width = ((index + 1) / slides.length * 100) + '%';
+    location.hash = 'page-' + (index + 1);
+  }
+
+  function next(){ show(index + 1); }
+  function prev(){ show(index - 1); }
+  function toggleFullscreen(){
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen && document.exitFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', function(e){
+    const key = e.key.toLowerCase();
+    if(key === 'arrowright' || key === 'pagedown' || key === ' '){ e.preventDefault(); next(); }
+    if(key === 'arrowleft' || key === 'pageup'){ e.preventDefault(); prev(); }
+    if(key === 'f'){ e.preventDefault(); toggleFullscreen(); }
+    if(key === 'home'){ e.preventDefault(); show(0); }
+    if(key === 'end'){ e.preventDefault(); show(slides.length - 1); }
+  });
+
+  let startX = null;
+  document.addEventListener('touchstart', e => { startX = e.changedTouches[0].screenX; }, {passive:true});
+  document.addEventListener('touchend', e => {
+    if(startX === null) return;
+    const dx = e.changedTouches[0].screenX - startX;
+    if(Math.abs(dx) > 55){ dx < 0 ? next() : prev(); }
+    startX = null;
+  }, {passive:true});
+
+  const match = location.hash.match(/page-(\d+)/);
+  if(match){ show(parseInt(match[1],10) - 1); } else { show(0); }
+})();
+</script>
+</body>
+</html>

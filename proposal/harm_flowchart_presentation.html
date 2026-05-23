@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HARM Flowchart Presentation</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --panel: #0A0A0A;
+      --panel-2: #111111;
+      --panel-3: #171717;
+      --text: #FFFFFF;
+      --muted: #A3A3A3;
+      --muted-2: #737373;
+      --accent: #DC2626;
+      --accent-2: #EF4444;
+      --accent-dark: #7F1D1D;
+      --border: rgba(255, 255, 255, 0.13);
+      --border-red: rgba(220, 38, 38, 0.55);
+      --shadow: 0 24px 80px rgba(220, 38, 38, 0.13);
+      --radius: 22px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(circle at 18% 16%, rgba(220, 38, 38, 0.24), transparent 28%),
+        radial-gradient(circle at 86% 22%, rgba(220, 38, 38, 0.12), transparent 22%),
+        radial-gradient(circle at 54% 95%, rgba(127, 29, 29, 0.28), transparent 30%),
+        #000;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.16;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at 50% 45%, black 0, transparent 78%);
+    }
+
+    .deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 42px 56px 78px;
+      display: none;
+      overflow: hidden;
+    }
+
+    .slide.active {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 24px;
+      animation: fadeIn 260ms ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.995); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border: 1px solid var(--border-red);
+      color: #fecaca;
+      background: rgba(220, 38, 38, 0.12);
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .kicker .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 20px var(--accent);
+    }
+
+    h1 {
+      margin: 12px 0 0;
+      font-size: clamp(30px, 4vw, 58px);
+      line-height: 0.95;
+      letter-spacing: -0.055em;
+    }
+
+    .subtitle {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.45;
+      max-width: 860px;
+    }
+
+    .page-tag {
+      flex: 0 0 auto;
+      text-align: right;
+      font-family: var(--mono);
+      color: var(--muted-2);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .page-tag b {
+      display: block;
+      color: white;
+      font-size: 28px;
+      font-family: var(--sans);
+      letter-spacing: -0.04em;
+    }
+
+    .content {
+      min-height: 0;
+      display: grid;
+      align-items: stretch;
+      gap: 18px;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 15px;
+      width: 100%;
+    }
+
+    .flow-row.wrap { flex-wrap: wrap; }
+
+    .flow-col {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .card, .mini-card, .big-card, .table-card, .branch-card {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(23,23,23,0.94), rgba(8,8,8,0.94));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before, .big-card::before, .table-card::before, .branch-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.95;
+    }
+
+    .card {
+      min-width: 145px;
+      max-width: 220px;
+      flex: 1 1 0;
+      padding: 19px 16px;
+      text-align: center;
+    }
+
+    .card.wide { max-width: 300px; }
+    .card.fixed { flex: 0 0 190px; }
+
+    .icon {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 12px;
+      border: 1px solid rgba(220, 38, 38, 0.5);
+      border-radius: 15px;
+      background: rgba(220, 38, 38, 0.12);
+      color: #fecaca;
+      font-size: 23px;
+    }
+
+    .card h3, .mini-card h3, .big-card h3, .table-card h3, .branch-card h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.12;
+      letter-spacing: -0.025em;
+    }
+
+    .card p, .mini-card p, .big-card p, .table-card p, .branch-card p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.36;
+    }
+
+    .arrow {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      color: var(--accent-2);
+      font-size: 25px;
+      font-weight: 900;
+      opacity: 0.95;
+      min-width: 24px;
+      text-shadow: 0 0 18px rgba(220, 38, 38, 0.8);
+    }
+
+    .arrow.down {
+      min-height: 24px;
+      transform: rotate(90deg);
+      margin: -5px 0;
+    }
+
+    .mini-card {
+      padding: 14px 15px;
+      min-width: 150px;
+      flex: 1 1 0;
+    }
+
+    .mini-card h3 { font-size: 14px; }
+    .mini-card p { font-size: 12px; }
+
+    .big-card {
+      padding: 22px;
+      min-height: 100%;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+
+    .stack { display: flex; flex-direction: column; gap: 12px; }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      margin-right: 9px;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--accent);
+      font-weight: 900;
+      font-size: 13px;
+      box-shadow: 0 0 20px rgba(220, 38, 38, 0.35);
+    }
+
+    .list { margin: 10px 0 0; padding: 0; list-style: none; }
+    .list li {
+      position: relative;
+      padding-left: 17px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.38;
+      margin: 5px 0;
+    }
+    .list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .pill {
+      border: 1px solid rgba(220, 38, 38, 0.45);
+      background: rgba(220, 38, 38, 0.1);
+      color: #fecaca;
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .formula {
+      font-family: var(--mono);
+      color: #fecaca;
+      border: 1px solid rgba(220, 38, 38, 0.35);
+      background: rgba(220, 38, 38, 0.08);
+      border-radius: 16px;
+      padding: 13px 15px;
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 15px;
+      align-items: stretch;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      top: 42px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.8;
+      z-index: 0;
+    }
+
+    .time-card {
+      z-index: 1;
+      padding: 18px 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #141414, #070707);
+      border: 1px solid var(--border);
+      text-align: center;
+      min-height: 206px;
+    }
+
+    .time-card .time {
+      display: inline-grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #000;
+      border: 2px solid var(--accent);
+      color: #fff;
+      font-weight: 950;
+      box-shadow: 0 0 24px rgba(220,38,38,0.35);
+      margin-bottom: 12px;
+    }
+
+    .time-card h3 { margin: 0; font-size: 15px; line-height: 1.2; }
+    .time-card p { margin: 8px 0 0; color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+
+    .score-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.95fr;
+      gap: 16px;
+      min-height: 0;
+    }
+
+    .score-main {
+      display: grid;
+      grid-template-columns: 1.25fr 0.85fr;
+      gap: 14px;
+    }
+
+    .score-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #151515, #070707);
+    }
+
+    .score-card h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .weight {
+      font-family: var(--mono);
+      color: #fecaca;
+      border: 1px solid rgba(220,38,38,0.4);
+      background: rgba(220,38,38,0.08);
+      padding: 4px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+    }
+
+    .gate {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .gate-box {
+      border: 1px solid rgba(255,255,255,0.13);
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 10px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .gate-box strong { color: #fff; display: block; margin-bottom: 3px; }
+
+    .strike-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .strike {
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 14px;
+      padding: 9px 10px;
+      background: rgba(255,255,255,0.035);
+      font-size: 12.3px;
+      color: var(--muted);
+    }
+
+    .strike b { color: #fff; }
+    .strike .level { color: #fecaca; font-family: var(--mono); font-weight: 900; }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      background: #080808;
+    }
+
+    .matrix-row { display: contents; }
+    .matrix-cell {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.09);
+      color: var(--muted);
+      font-size: 12.7px;
+      line-height: 1.35;
+    }
+
+    .matrix-row:last-child .matrix-cell { border-bottom: 0; }
+    .matrix-cell.attack { border-right: 1px solid rgba(255,255,255,0.09); }
+    .matrix-cell strong { color: #fff; display: block; margin-bottom: 3px; font-size: 13px; }
+    .matrix-cell .label { color: #fecaca; font-weight: 850; }
+
+    .defense-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 13px;
+      min-height: 0;
+    }
+
+    .defense-grid .big-card { padding: 16px; min-height: auto; }
+    .defense-grid .big-card h3 { font-size: 15px; color: #fff; }
+    .defense-grid .big-card p { font-size: 12.4px; margin-top: 8px; }
+
+    .decision {
+      display: grid;
+      grid-template-columns: 240px 42px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .decision-root {
+      padding: 22px;
+      border-radius: 24px;
+      border: 1px solid var(--border-red);
+      background: linear-gradient(180deg, rgba(220,38,38,0.18), rgba(10,10,10,0.96));
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .decision-root h3 { margin: 0; font-size: 24px; letter-spacing: -0.04em; }
+    .decision-root p { margin: 8px 0 0; color: #fecaca; }
+
+    .decision-branches {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 13px;
+    }
+
+    .branch-card {
+      padding: 16px;
+    }
+
+    .branch-card h3 {
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #fecaca;
+      background: rgba(220,38,38,0.1);
+      border: 1px solid rgba(220,38,38,0.35);
+      padding: 3px 6px;
+      border-radius: 999px;
+      flex: 0 0 auto;
+    }
+
+    .business-layout {
+      display: grid;
+      grid-template-columns: 1.35fr 0.75fr;
+      gap: 16px;
+    }
+
+    .loop-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .loop-card {
+      min-height: 110px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: linear-gradient(180deg, #151515, #070707);
+      position: relative;
+    }
+
+    .loop-card .num {
+      display: inline-grid;
+      place-items: center;
+      width: 25px;
+      height: 25px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      font-weight: 900;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .loop-card h3 { margin: 0; font-size: 13.5px; line-height: 1.18; }
+    .loop-card p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.32; }
+
+    .phase-card {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: linear-gradient(180deg, #151515, #070707);
+    }
+
+    .phase-card h3 { margin: 0; font-size: 16px; }
+    .phase-card .months { color: #fecaca; font-family: var(--mono); font-size: 12px; margin: 6px 0 0; }
+    .phase-card p { margin: 8px 0 0; color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+
+    .nav {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 50;
+      padding: 9px 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(10,10,10,0.72);
+      backdrop-filter: blur(14px);
+      border-radius: 999px;
+    }
+
+    .nav button {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: #111;
+      color: #fff;
+      min-width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 900;
+      transition: 150ms ease;
+    }
+
+    .nav button:hover { border-color: var(--accent); color: #fecaca; transform: translateY(-1px); }
+    .nav .count { min-width: 82px; text-align: center; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+
+    .hint {
+      position: fixed;
+      right: 24px;
+      bottom: 28px;
+      z-index: 45;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand {
+      position: fixed;
+      left: 24px;
+      bottom: 28px;
+      z-index: 45;
+      color: #fecaca;
+      font-weight: 950;
+      letter-spacing: -0.04em;
+    }
+
+    .danger-note {
+      border: 1px solid rgba(220,38,38,0.55);
+      background: rgba(220,38,38,0.12);
+      color: #fecaca;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 12.5px;
+      line-height: 1.35;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .slide { padding: 28px 24px 82px; overflow-y: auto; }
+      .slide.active { display: block; }
+      .header { flex-direction: column; }
+      .page-tag { text-align: left; }
+      .flow-row, .grid-2, .grid-3, .grid-4, .grid-5, .score-layout, .score-main, .defense-grid, .decision, .decision-branches, .business-layout, .loop-grid, .timeline { display: flex; flex-direction: column; }
+      .arrow { transform: rotate(90deg); min-height: 28px; }
+      .card, .card.fixed { max-width: none; width: 100%; flex-basis: auto; }
+      .timeline::before { display: none; }
+      .hint, .brand { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" id="deck">
+    <!-- Page 1 -->
+    <section class="slide active">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · System</div>
+          <h1>System Architecture Overview</h1>
+          <p class="subtitle">HARM — “Hey Asshole, Return Money” — is a Bittensor subnet for decentralized fake-image detection in e-commerce refund fraud.</p>
+        </div>
+        <div class="page-tag"><b>01</b>Architecture</div>
+      </header>
+      <div class="content">
+        <div class="flow-col">
+          <div class="flow-row">
+            <div class="card fixed"><div class="icon">🛒</div><h3>Merchant Client</h3><p>Submits suspicious refund images through API.</p></div>
+            <div class="arrow">→</div>
+            <div class="card fixed"><div class="icon">🔌</div><h3>HARM API</h3><p>Receives image and metadata, then routes task.</p></div>
+            <div class="arrow">→</div>
+            <div class="card fixed"><div class="icon">🧠</div><h3>Validator Node</h3><p>Forge Engine, task distribution, scoring.</p></div>
+            <div class="arrow">→</div>
+            <div class="card fixed"><div class="icon">⛏️</div><h3>Miner Nodes</h3><p>ML Model Miner / Human Miner / Hybrid Miner.</p></div>
+          </div>
+          <div class="arrow down">→</div>
+          <div class="flow-row">
+            <div class="card wide"><div class="icon">📤</div><h3>Miners Return Results</h3><p>Verdict, confidence, optional mask, optional method.</p></div>
+            <div class="arrow">→</div>
+            <div class="card wide"><div class="icon">📊</div><h3>Validator Scores</h3><p>Probe ground truth + weighted real-task consensus.</p></div>
+            <div class="arrow">→</div>
+            <div class="card wide"><div class="icon">⛓️</div><h3>Bittensor Chain</h3><p>Submit weights to Yuma Consensus.</p></div>
+            <div class="arrow">→</div>
+            <div class="card wide"><div class="icon">💰</div><h3>Emission Distribution</h3><p>Rewards Miners, Validators, and subnet owner.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 2 -->
+    <section class="slide">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · Validator</div>
+          <h1>Validator Workflow</h1>
+          <p class="subtitle">Validator creates an indistinguishable mixture of real merchant queries and self-generated probe tasks, then turns Miner performance into Bittensor weights.</p>
+        </div>
+        <div class="page-tag"><b>02</b>Validator Pipeline</div>
+      </header>
+      <div class="content">
+        <div class="grid-3">
+          <div class="big-card"><h3><span class="step-badge">1</span>Image Source Management</h3><p>Task pool is composed of <b>70% real merchant queries</b> and <b>30% probe tasks</b> created by the Validator.</p></div>
+          <div class="big-card"><h3><span class="step-badge">2</span>Forge Engine</h3><p>Generate fake images from clean originals and record the hidden answer key.</p><div class="pill-row"><span class="pill">Copy-Move</span><span class="pill">Splicing</span><span class="pill">Compression Mismatch</span><span class="pill">Noise Injection</span></div><p>Each probe stores tampering method + ground truth mask.</p></div>
+          <div class="big-card"><h3><span class="step-badge">3</span>Task Distribution</h3><p>Mix probes and real tasks, then send the same image to all active Miners.</p></div>
+          <div class="big-card"><h3><span class="step-badge">4</span>Collect Responses</h3><p>Receive committed/revealed Miner outputs: verdict, confidence, mask, method.</p></div>
+          <div class="big-card"><h3><span class="step-badge">5</span>Scoring</h3><p>Probes are scored against ground truth. Real tasks are scored by weighted vote.</p></div>
+          <div class="big-card"><h3><span class="step-badge">6</span>Submit Weights</h3><p>Convert Miner scores into subnet weights and submit them to the Bittensor chain.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 3 -->
+    <section class="slide">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · Miner</div>
+          <h1>Miner Workflow</h1>
+          <p class="subtitle">Each Miner chooses a detection strategy, analyzes the image, and submits a structured forensic result through commit-reveal.</p>
+        </div>
+        <div class="page-tag"><b>03</b>Miner Pipeline</div>
+      </header>
+      <div class="content">
+        <div class="flow-col">
+          <div class="flow-row">
+            <div class="card"><div class="icon">📥</div><h3>1 · Receive Image</h3><p>Validator sends the task image.</p></div>
+            <div class="arrow">→</div>
+            <div class="card wide"><div class="icon">🧭</div><h3>2 · Choose Method</h3><p>ML path, human path, or hybrid path.</p></div>
+            <div class="arrow">→</div>
+            <div class="card"><div class="icon">🔎</div><h3>3 · Analyze</h3><p>Run detection and localization.</p></div>
+            <div class="arrow">→</div>
+            <div class="card wide"><div class="icon">🧾</div><h3>4 · Generate Response</h3><p>Verdict + confidence + optional mask + optional method.</p></div>
+            <div class="arrow">→</div>
+            <div class="card"><div class="icon">🔐</div><h3>5 · Submit</h3><p>Commit-Reveal protocol.</p></div>
+          </div>
+          <div class="grid-3">
+            <div class="big-card"><h3>ML Model Path</h3><p>Choose from 10 model backends.</p><div class="pill-row"><span class="pill">Mesorch</span><span class="pill">TruFor</span><span class="pill">FOCAL</span><span class="pill">IML-ViT</span><span class="pill">ProFact</span><span class="pill">PSCC-Net</span></div></div>
+            <div class="big-card"><h3>Human Path</h3><p>Visual inspection plus manual annotation. Useful when edge cases need semantic understanding.</p></div>
+            <div class="big-card"><h3>Hybrid Path</h3><p>Model pre-screening first, then human review for low-confidence or high-value cases.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 4 -->
+    <section class="slide">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · Anti-Copying</div>
+          <h1>Commit-Reveal Anti-Copying Protocol</h1>
+          <p class="subtitle">Miners commit to an irreversible hash before anyone can reveal their actual answer, preventing free-riding and copied responses.</p>
+        </div>
+        <div class="page-tag"><b>04</b>Commit → Reveal</div>
+      </header>
+      <div class="content">
+        <div class="timeline">
+          <div class="time-card"><div class="time">T0</div><h3>Distribute Image</h3><p>Validator sends the same image to all Miners.</p></div>
+          <div class="time-card"><div class="time">T1</div><h3>Phase 1 · Commit</h3><p>Each Miner submits <b>hash(result + nonce)</b>.</p></div>
+          <div class="time-card"><div class="time">T2</div><h3>Commit Window Closes</h3><p>All Miner hashes are collected. Results remain hidden.</p></div>
+          <div class="time-card"><div class="time">T3</div><h3>Phase 2 · Reveal</h3><p>Miners reveal original result and nonce.</p></div>
+          <div class="time-card"><div class="time">T4</div><h3>Verify + Score</h3><p>Hash mismatch or timeout → zero score. Valid reveals enter scoring.</p></div>
+        </div>
+        <div class="danger-note"><b>Key point:</b> Between commit and reveal, Miners only see irreversible hash values from others. They cannot reverse-engineer verdict, confidence, or mask, so copying is structurally blocked.</div>
+      </div>
+    </section>
+
+    <!-- Page 5 -->
+    <section class="slide">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · Scoring</div>
+          <h1>Scoring Pipeline</h1>
+          <p class="subtitle">Objective probes dominate the score, real merchant images use weighted consensus, and the Strike System turns repeated guessing into immediate exclusion.</p>
+        </div>
+        <div class="page-tag"><b>05</b>Weights + Strikes</div>
+      </header>
+      <div class="content score-layout">
+        <div class="score-main">
+          <div class="stack">
+            <div class="score-card"><h3>A · Probe Task Score <span class="weight">60%</span></h3><p>Ground truth available.</p><div class="gate"><div class="gate-box"><strong>Verdict correct</strong>Continue scoring</div><div class="arrow">→</div><div class="gate-box"><strong>Verdict wrong</strong>Score = 0 + one Strike</div></div><ul class="list"><li>Confidence Calibration: 70% · C_cal = 1 - |confidence - ideal_value|</li><li>Tampered Region IoU: 20% optional bonus</li><li>Method Identification: 10% optional bonus</li></ul></div>
+            <div class="score-card"><h3>B · Consensus Task Score <span class="weight">35%</span></h3><p>No ground truth. Weighted majority vote where each Miner's vote weight equals historical probe accuracy.</p><div class="formula">Agree with weighted majority → 1 point · Disagree → 0 points</div></div>
+          </div>
+          <div class="stack">
+            <div class="score-card"><h3>C · Latency Score <span class="weight">5%</span></h3><p>Low weight keeps human Miners competitive.</p><div class="formula">S_latency = max(0, 1 - response_time / timeout)</div></div>
+            <div class="score-card"><h3>Total Score</h3><div class="formula">0.60 × avg(Probe) + 0.35 × avg(Consensus) + 0.05 × Latency</div><p>Prerequisite: Strike not triggered; otherwise total score = 0.</p></div>
+          </div>
+        </div>
+        <div class="big-card">
+          <h3>D · Strike System</h3>
+          <p>Track each Miner's last 10 probe results in a rolling window.</p>
+          <div class="strike-grid">
+            <div class="strike"><span class="level">0-2 wrong</span><span><b>Normal:</b> full participation.</span></div>
+            <div class="strike"><span class="level">3 wrong</span><span><b>Yellow Card:</b> consensus voting weight drops to 0; probes only until credit rebuilds.</span></div>
+            <div class="strike"><span class="level">4 wrong</span><span><b>Red Card:</b> weight set to 0; frozen for 3 epochs.</span></div>
+            <div class="strike"><span class="level">5+ wrong</span><span><b>Permanent Ban:</b> kicked from network; must re-register and burn TAO.</span></div>
+          </div>
+          <div class="danger-note">More deterrent than slow weight reduction: speculators who guess wrong 3 times in 10 are immediately cut off.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 6 -->
+    <section class="slide">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · Probe Engine</div>
+          <h1>Probe Task Generation Pipeline</h1>
+          <p class="subtitle">Probe tasks are synthetic but hidden inside the normal task pool, giving Validators an objective answer key without letting Miners know which images are tests.</p>
+        </div>
+        <div class="page-tag"><b>06</b>Forge + Adapt</div>
+      </header>
+      <div class="content">
+        <div class="flow-col">
+          <div class="flow-row">
+            <div class="card"><div class="icon">🖼️</div><h3>1 · Clean Image</h3><p>Select product image from library.</p></div>
+            <div class="arrow">→</div>
+            <div class="card wide"><div class="icon">🎲</div><h3>2 · Random Method</h3><p>Copy-Move / Splicing / Compression Mismatch / Noise Injection.</p></div>
+            <div class="arrow">→</div>
+            <div class="card"><div class="icon">🧪</div><h3>3 · Tamper</h3><p>Apply forged operation.</p></div>
+            <div class="arrow">→</div>
+            <div class="card"><div class="icon">🎯</div><h3>4 · Ground Truth</h3><p>Binary mask + method used.</p></div>
+          </div>
+          <div class="flow-row">
+            <div class="card wide"><div class="icon">📦</div><h3>5 · Package Probe</h3><p>Forged image + hidden ground truth.</p></div>
+            <div class="arrow">→</div>
+            <div class="card wide"><div class="icon">🌫️</div><h3>6 · Mix Into Pool</h3><p>Miners cannot distinguish probes from real merchant tasks.</p></div>
+            <div class="arrow">→</div>
+            <div class="card wide"><div class="icon">📈</div><h3>7 · Auto-Escalate</h3><p>If network accuracy &gt; 90% for 3 epochs, increase difficulty.</p></div>
+          </div>
+          <div class="grid-4">
+            <div class="mini-card"><h3>Smaller Regions</h3><p>Harder localization.</p></div>
+            <div class="mini-card"><h3>Advanced Tampering</h3><p>More realistic artifacts.</p></div>
+            <div class="mini-card"><h3>Multi-Method Mix</h3><p>Combined manipulations.</p></div>
+            <div class="mini-card"><h3>Post-Processing</h3><p>Compress, blur, resize, noise.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 7 -->
+    <section class="slide">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · Security</div>
+          <h1>Anti-Gaming Overview</h1>
+          <p class="subtitle">Each economic or behavioral attack is paired with a scoring, protocol, or consensus defense.</p>
+        </div>
+        <div class="page-tag"><b>07</b>Attack → Defense</div>
+      </header>
+      <div class="content">
+        <div class="matrix">
+          <div class="matrix-row"><div class="matrix-cell attack"><strong>Sybil Attack</strong>One person registers multiple Miners to manipulate voting.</div><div class="matrix-cell"><span class="label">Weighted voting + economic barrier.</span> Identity count does not equal voting power.</div></div>
+          <div class="matrix-row"><div class="matrix-cell attack"><strong>Free-Riding</strong>Wait for others to answer, then copy.</div><div class="matrix-cell"><span class="label">Commit-Reveal protocol.</span> Answers stay hidden until commitments close.</div></div>
+          <div class="matrix-row"><div class="matrix-cell attack"><strong>Always-Say-Fake</strong>Gamble on a fixed probability.</div><div class="matrix-cell"><span class="label">Dynamic ratio + gate + Strikes.</span> Wrong authentic probes trigger zero score and Strikes.</div></div>
+          <div class="matrix-row"><div class="matrix-cell attack"><strong>Always-Say-Real</strong>Same fixed-strategy gamble in reverse.</div><div class="matrix-cell"><span class="label">Symmetric defense.</span> Wrong tampered probes punish the same way.</div></div>
+          <div class="matrix-row"><div class="matrix-cell attack"><strong>Model Overfitting</strong>Optimize only for Validator forge patterns.</div><div class="matrix-cell"><span class="label">Method diversity + adaptation.</span> Probe difficulty and methods keep changing.</div></div>
+          <div class="matrix-row"><div class="matrix-cell attack"><strong>Validator Collusion</strong>Leak probe answers to specific Miners.</div><div class="matrix-cell"><span class="label">Multi-Validator cross-verification.</span> Yuma Consensus reduces anomalous influence.</div></div>
+          <div class="matrix-row"><div class="matrix-cell attack"><strong>Low-Quality Squatting</strong>Poor Miners persist without contributing.</div><div class="matrix-cell"><span class="label">Three Strikes, You're Out.</span> Bad performers are frozen or removed.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 8 -->
+    <section class="slide">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · Defense Detail</div>
+          <h1>Anti-Gaming Detailed Explanations</h1>
+          <p class="subtitle">The system combines objective probe evaluation, hidden ratios, commitment cryptography, adaptive forge difficulty, and multi-Validator checks.</p>
+        </div>
+        <div class="page-tag"><b>08</b>Seven Defenses</div>
+      </header>
+      <div class="content">
+        <div class="defense-grid">
+          <div class="big-card"><h3>Defense 1 · Weighted Voting</h3><p>Consensus voting is weighted by historical probe accuracy, not identity count. Five weak Sybil Miners have less influence than one strong Miner. Bittensor registration burns ~2500 TAO, making large-scale Sybil attacks expensive. Probe tasks contribute 60% of total score, where Sybil identities gain no advantage.</p></div>
+          <div class="big-card"><h3>Defense 2 · Commit-Reveal Protocol</h3><p>Phase 1: Miners submit hash(result + nonce), an irreversible commitment. Phase 2: after all hashes are collected, Miners reveal result and nonce. Mismatch or timeout results in zero score. Between phases, only hash values are visible, so verdict and confidence cannot be copied.</p></div>
+          <div class="big-card"><h3>Defense 3-4 · Dynamic Real/Fake Ratio</h3><p>The Validator changes authentic/tampered probe ratios each epoch and never discloses them. Always-fake fails on authentic probes; always-real fails on tampered probes. Validators can increase fake ratio to flush out speculators. Low probe scores drive consensus voting weight toward zero.</p></div>
+          <div class="big-card"><h3>Defense 5 · Method Diversity + Difficulty Adaptation</h3><p>The Forge Engine randomly selects from Copy-Move, Splicing, Compression Mismatch, and Noise Injection. Once network accuracy exceeds 90% for 3 epochs, difficulty escalates with smaller regions, inpainting, combined methods, and post-processing. Consensus rewards real-image performance, penalizing overfit Miners.</p></div>
+          <div class="big-card"><h3>Defense 6 · Multi-Validator Cross-Verification</h3><p>Multiple Validators generate and score probes independently. If Validator A colludes with Miner X, X only looks good on A's probes but not on B's or C's. Yuma Consensus detects anomalous weight distributions and reduces A's influence and emission.</p></div>
+          <div class="big-card"><h3>Defense 7 · Strike System</h3><p>Last 10 probe verdicts are tracked. 3 wrong triggers Yellow Card; 4 wrong triggers Red Card and 3-epoch freeze; 5+ wrong triggers permanent ban and re-registration. This eliminates low-quality Miners quickly instead of slowly starving them by weight reduction.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 9 -->
+    <section class="slide">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · Miner Setup</div>
+          <h1>Miner Resource Selection Guide</h1>
+          <p class="subtitle">A practical decision tree for choosing the right Miner strategy based on GPU availability, VRAM, and willingness to inspect images manually.</p>
+        </div>
+        <div class="page-tag"><b>09</b>Decision Tree</div>
+      </header>
+      <div class="content">
+        <div class="decision">
+          <div class="decision-root"><div class="icon">🖥️</div><h3>Do you have a GPU?</h3><p>Pick the path that matches your hardware.</p></div>
+          <div class="arrow">→</div>
+          <div class="decision-branches">
+            <div class="branch-card"><h3>No GPU <span class="tag">CPU / Human</span></h3><p><b>Willing to manually inspect?</b></p><ul class="list"><li>Yes → Human Miner: visual judgment + manual annotation</li><li>No → PSCC-Net: 2M params, CPU-capable, 0.019s per image</li></ul></div>
+            <div class="branch-card"><h3>4-6 GB VRAM <span class="tag">Entry GPU</span></h3><p>Use lightweight but competitive model backends.</p><ul class="list"><li>Mesorch-P: AAAI 2025 latest SOTA, AUC 0.943</li><li>TruFor: CVPR 2023, AUC 0.924</li></ul></div>
+            <div class="branch-card"><h3>6-8 GB VRAM <span class="tag">Mid GPU</span></h3><p>Use a stronger model when memory allows.</p><ul class="list"><li>IML-ViT: highest standardized F1, 0.725</li><li>Good balance of accuracy and deployability</li></ul></div>
+            <div class="branch-card"><h3>8+ GB VRAM <span class="tag">High GPU</span></h3><p>Push for best localization and ensemble quality.</p><ul class="list"><li>FOCAL: strongest IoU</li><li>Multi-model ensemble voting for accuracy ceiling</li></ul></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page 10 -->
+    <section class="slide">
+      <header class="header">
+        <div>
+          <div class="kicker"><span class="dot"></span> HARM · Business</div>
+          <h1>Business Loop</h1>
+          <p class="subtitle">The subnet transforms fraud-image analysis into a full economic cycle: merchant demand, decentralized forensic analysis, reports, and Bittensor emission incentives.</p>
+        </div>
+        <div class="page-tag"><b>10</b>Commercial Cycle</div>
+      </header>
+      <div class="content business-layout">
+        <div class="big-card">
+          <div class="loop-grid">
+            <div class="loop-card"><span class="num">1</span><h3>Refund Request</h3><p>Merchant receives suspicious image from e-commerce refund flow.</p></div>
+            <div class="loop-card"><span class="num">2</span><h3>Submit via HARM API</h3><p>Image enters the HARM detection pipeline.</p></div>
+            <div class="loop-card"><span class="num">3</span><h3>Validator Mixes Task</h3><p>Real task is distributed alongside hidden probes.</p></div>
+            <div class="loop-card"><span class="num">4</span><h3>Miners Analyze</h3><p>ML, human, or hybrid Miners inspect independently.</p></div>
+            <div class="loop-card"><span class="num">5</span><h3>Commit-Reveal</h3><p>Results are committed first, revealed later.</p></div>
+            <div class="loop-card"><span class="num">6</span><h3>Validator Scores</h3><p>Probes use ground truth; real tasks use consensus.</p></div>
+            <div class="loop-card"><span class="num">7</span><h3>Forensic Report</h3><p>Authentic/tampered + confidence + suspicious region.</p></div>
+            <div class="loop-card"><span class="num">8</span><h3>Merchant Decision</h3><p>Approve, reject, or escalate refund claim.</p></div>
+            <div class="loop-card"><span class="num">9</span><h3>Emission Distribution</h3><p>41% Miners + 41% Validators + 18% subnet owner.</p></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="phase-card"><h3>Phase 1</h3><div class="months">Months 1-3</div><p>Synthetic probes only. Build Miner ecosystem and benchmark model paths.</p></div>
+          <div class="phase-card"><h3>Phase 2</h3><div class="months">Months 4-6</div><p>Integrate merchant API and charge per query for suspicious refund images.</p></div>
+          <div class="phase-card"><h3>Phase 3</h3><div class="months">Months 6+</div><p>Expand to insurance claims, legal forensics, and cross-border e-commerce.</p></div>
+          <div class="danger-note"><b>Core flywheel:</b> better Miners → better forensic reports → more merchant demand → more emission and query revenue → stronger Miner ecosystem.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="brand">HARM</div>
+  <div class="nav" aria-label="Presentation controls">
+    <button id="prev" title="Previous slide">←</button>
+    <div class="count"><span id="current">01</span> / <span id="total">10</span></div>
+    <button id="next" title="Next slide">→</button>
+  </div>
+  <div class="hint">← / → navigate · F fullscreen</div>
+
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll('.slide'));
+      const currentEl = document.getElementById('current');
+      const totalEl = document.getElementById('total');
+      const prevBtn = document.getElementById('prev');
+      const nextBtn = document.getElementById('next');
+      let index = 0;
+      totalEl.textContent = String(slides.length).padStart(2, '0');
+
+      function showSlide(nextIndex) {
+        index = Math.max(0, Math.min(slides.length - 1, nextIndex));
+        slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+        currentEl.textContent = String(index + 1).padStart(2, '0');
+        prevBtn.disabled = index === 0;
+        nextBtn.disabled = index === slides.length - 1;
+      }
+
+      function toggleFullscreen() {
+        const root = document.documentElement;
+        if (!document.fullscreenElement) {
+          if (root.requestFullscreen) root.requestFullscreen();
+        } else if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+
+      document.addEventListener('keydown', (event) => {
+        const key = event.key.toLowerCase();
+        if (event.key === 'ArrowRight') showSlide(index + 1);
+        if (event.key === 'ArrowLeft') showSlide(index - 1);
+        if (key === 'f') toggleFullscreen();
+        if (key >= '1' && key <= '9') showSlide(Number(key) - 1);
+        if (key === '0') showSlide(9);
+      });
+
+      prevBtn.addEventListener('click', () => showSlide(index - 1));
+      nextBtn.addEventListener('click', () => showSlide(index + 1));
+      showSlide(0);
+    })();
+  </script>
+</body>
+</html>
