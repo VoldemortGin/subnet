@@ -528,21 +528,24 @@ The question "Why build this as a Bittensor subnet rather than a centralized ser
 
 ## 12. Technical Implementation Status
 
-The HARM codebase is functional and demonstrates end-to-end feasibility:
+The HARM codebase is functional and demonstrates end-to-end feasibility with comprehensive test coverage (262 unit tests):
 
 | Component | Status | Location |
 |-----------|--------|----------|
-| Protocol layer (data types, enums, message formats) | Complete | `src/protocol.py` |
-| Validator Forge Engine (4 tampering methods, ground truth mask generation) | Complete | `src/validator/forge.py` |
-| Validator Scorer (probe scoring, consensus voting, epoch aggregation) | Complete | `src/validator/scorer.py` |
-| Miner Detector (ELA + noise analysis built-in pipeline) | Complete | `src/miner/detector.py` |
-| Model Registry (7 backend integrations, auto-selection) | Complete | `src/miner/model_registry.py` |
+| Protocol layer (data types, enums, message formats) | Complete + Tested | `src/protocol.py` |
+| Validator Forge Engine (4 tampering methods, ground truth mask generation) | Complete + Tested | `src/validator/forge.py` |
+| Validator Scorer (probe scoring, consensus voting, epoch aggregation) | Complete + Tested | `src/validator/scorer.py` |
+| Miner Detector (ELA + noise analysis built-in pipeline) | Complete + Tested | `src/miner/detector.py` |
+| Model Registry (10 backend integrations, auto-selection) | Complete + Tested | `src/miner/model_registry.py` |
 | Backend Interface (abstract base class for detection backends) | Complete | `src/miner/backends/base.py` |
-| Backend Implementations (ELA, ManTraNet, TruFor, CAT-Net, MVSS-Net, PSCC-Net, FOCAL) | Complete | `src/miner/backends/*.py` |
+| Backend Implementations (ELA, ManTraNet, TruFor, CAT-Net, MVSS-Net, PSCC-Net, FOCAL, IML-ViT, Mesorch, ProFact) | Complete | `src/miner/backends/*.py` |
+| Commit-Reveal Protocol (hash commitment, reveal verification, SHA-256) | Complete + Tested | `backend/api/routes/tasks.py` |
+| FastAPI Backend (REST API, services, in-memory store) | Complete + Tested | `backend/` |
+| React Frontend (Dashboard, Analyze, Submit, Miners, Tasks pages) | Complete | `frontend/` |
 | Demo Pipeline (end-to-end probe generation, detection, scoring) | Complete | `demo/run_demo.py` |
+| Test Suite (262 unit tests, all passing) | Complete | `tests/` |
 
 **Not yet implemented** (planned for mainnet):
-- Commit-reveal protocol (network layer)
 - Bittensor chain integration (axon/dendrite, weight submission)
 - Difficulty adaptation controller
 - Merchant API gateway
